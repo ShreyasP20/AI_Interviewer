@@ -1,0 +1,142 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,200;0,300;1,300&display=swap');
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    scroll-padding-top: 2rem;
+    list-style: none;
+    text-decoration: none;
+    scroll-behavior: smooth;
+    font-family: 'Poppins', sans-serif;
+}
+
+section{
+    padding: 50px 10%;
+}
+
+:root{
+    --main-color:#00aaff;
+    --second-color:#092b54;
+}
+body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: url('../images/Wallpaper.jpeg') no-repeat;
+    background-position: bottom right;
+}
+
+*::selection{
+    color:#fff;
+    background: var(--main-color);
+}
+
+header{
+    position: fixed;
+    top:0;
+    left: 0;
+    width: 100%;
+    padding:20px 100px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 99;
+}
+
+.logo{
+    font-size: 2em;
+    color:var(--second-color);
+    user-select: none;
+}
+
+.navigation a{
+    position: relative;
+    font-size: 1.2em;
+    color:var(--second-color);
+    text-decoration: none;
+    font-weight: 500;
+    margin-left: 20px;
+}
+.navigation a::after{
+    content:"";
+    position:absolute;
+    left:0;
+    bottom:-6px;
+    width:100%;
+    height: 3px;
+    background: #00aaff;
+    border-radius: 5px;
+    transform: scaleX(0);
+    transition: transform .5s;
+}
+.navigation a:hover::after{
+
+    transform: scaleX(1);
+}
+
+.navigation .btnLogin-popup{
+    width:130px;
+    height:50px;
+    background: transparent;
+    border:2px solid #000000;
+    outline: None;
+    border-radius: 6px;
+    cursor:pointer;
+    font-size: 1.1em;
+    color: #000000;
+    font-weight: 500;
+    margin-left: 40px;
+}
+
+.navigation .btnLogin-popup:hover{
+    background: #000000;
+    color:rgb(0, 200, 255);
+}
+.home{
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start; 
+    gap:1rem;
+}
+
+.home-text{
+    flex:1 1 17rem;
+}
+
+.home-text span{
+    font-size: 1rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #16b978;
+}
+
+.home-text h1{
+    font-size:4rem;
+    color:var(--second-color);
+
+}
+
+.home-text p{
+    margin:0.5rem 0 1.4rem;
+}
+
+
+
+.btn{
+    padding:10px 20px;
+    border: 2px solid var(--main-color);
+    color: var(--main-color);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover{
+    letter-spacing: 2px;
+    color:#fff;
+    background: var(--main-color);
+}
