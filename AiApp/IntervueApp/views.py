@@ -10,14 +10,23 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 import speech_recognition as sr
 import pypdf
+from PIL import Image
+from IPython.display import Markdown
+import textwrap
 # Create your views here.
 
+generation_config = {
+  "temperature": 1,
+  "top_p": 0.95,
+  "top_k": 0,
+  "max_output_tokens": 8192,
+}
 similarity_scores=[0.0]*3
 resume=""
 position=""
 answer=""
 follow_up_q=False
-model = genai.GenerativeModel('gemini-pro')
+model = genai.GenerativeModel('gemini-pro', generation_config=generation_config)
 genai.configure(api_key='AIzaSyB2ykTpIgDjPe59LxWAIw_6QYjLdwrmNAA')
 chat=model.start_chat(history=[])
 current_answer=""
@@ -36,12 +45,10 @@ def speak(text):
     
     
 def get_answer():
-    
     try:
         os.remove(os.path.join(settings.MEDIA_ROOT, 'audio', 'answer.wav'))
     except:
         pass
-    
     audio_file_path = os.path.join(settings.MEDIA_ROOT, 'audio', 'answer.wav')
     r = sr.Recognizer()
     said = ""
@@ -49,14 +56,12 @@ def get_answer():
         with sr.AudioFile(audio_file_path) as source:
             audio_data = r.record(source)
             said = r.recognize_google(audio_data)
-    
     except sr.UnknownValueError:
         print("Speech Recognition could not understand audio")
-        return -1
-    
+        return "NAN"
     except sr.RequestError as e:
         print("Could not request results from Speech Recognition service; {0}".format(e))
-        return -1
+        return "NAN"
 
     return said
 
@@ -96,6 +101,8 @@ def record_and_process_audio(request):
                 for chunk in audio_file.chunks():
                     f.write(chunk)
             current_answer = get_answer()
+            if current_answer == "NAN":
+                return JsonResponse({'status': 'error', 'message': 'No Audio Recorded '})
             response = chat.send_message_async(f"Give an ideal answer, for the question {current_question} considering the skills {resume}")
             ideal_nu_answer= response.text.replace('\n', '').replace('```', '') 
             tokens1 = set(word_tokenize(current_answer.lower())) - set(stopwords.words('english'))
@@ -114,13 +121,13 @@ def record_and_process_audio(request):
     
 def play_audio(request):
     if follow_up_q:
-        response = chat.send_message(f"You are a recruiter at a Company, ask one question for {position} in a company based on the skills make that question technical. the Skillset of the person is {resume}")
-        current_question = response.text.replace('\n', '').replace('```', '')
-        speak(current_question)
-    else:
         response = chat.send_message(f"Ask a follow up question for {position} in a company. the Skillset of the person is{resume},reviewing the previous answer")
         fu_question = response.text.replace('\n', '').replace('```', '')
         speak(fu_question)
+    else:
+        response = chat.send_message(f"You are a recruiter at a Company, ask one question for {position} in a company based on the skills make that question technical. the Skillset of the person is {resume}")
+        current_question = response.text.replace('\n', '').replace('```', '')
+        speak(current_question)
     return render(request, 'IntervueApp/play_audio.html')
 
 
@@ -147,7 +154,7 @@ def process_media_folder():
 
 def process_pdf_files(pdf_files):
     for pdf_file in pdf_files:
-        pdf_path = os.path.join(settings.MEDIA_ROOT, 'pdf', pdf_file)
+        pdf_path = os.path.join(settings.MEDIA_ROOT, pdf_file)
 
         text = ""
         with open(pdf_path, 'rb') as file:
@@ -159,8 +166,22 @@ def process_pdf_files(pdf_files):
     resume = text
 
 
-
-
 def process_image_files(img_files):
+    model = genai.GenerativeModel('gemini-pro-vision')
+    text=""
+    for img_file in img_files:
+        img_path = os.path.join(settings.MEDIA_ROOT, img_file)
+        img = Image.open(img_path)
+        response = model.generate_content(['What do u see?',img], stream=True)
+        response.resolve()
+        new_text = to_markdown(response.text)
+        text = text + new_text
+
+    resume=text
+    print(resume)
     print("Processing image files...")
 
+
+def to_markdown(text):
+  text = text.replace('•', '  *')
+  return str(Markdown(textwrap.indent(text, '> ', predicate=lambda _: True)))
