@@ -87,8 +87,8 @@ def upload(request):
                     destination.write(chunk)
         process_media_folder()   
         return redirect(play_audio)
-      
     return render(request, 'IntervueApp/upload.html')
+
 
 def record_and_process_audio(request):
     if request.method == 'GET':
@@ -181,6 +181,7 @@ def process_image_files(img_files):
     print(resume)
     print("Processing image files...")
     model = genai.GenerativeModel('gemini-pro', generation_config=generation_config)
+
 
 def to_markdown(text):
   text = text.replace('•', '  *')
