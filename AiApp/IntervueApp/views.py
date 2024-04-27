@@ -180,7 +180,7 @@ def process_image_files(img_files):
     resume=text
     print(resume)
     print("Processing image files...")
-
+    model = genai.GenerativeModel('gemini-pro', generation_config=generation_config)
 
 def to_markdown(text):
   text = text.replace('•', '  *')
