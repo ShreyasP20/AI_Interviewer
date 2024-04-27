@@ -5,13 +5,13 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IntervueApp</title>
+    <title>AIvyInterview</title>
     <link rel="stylesheet" href="{% static "styles/index.css" %}">
 </head>
 
 <body>
     <header>
-        <h2 class="logo">IntervueApp</h2>
+        <h2 class="logo">AIvyInterview</h2>
         <nav class="navigation">
             <a href="#">Home</a>
             <a href="#">About</a>
@@ -25,7 +25,7 @@
             <p>Unlock your potential with our AI-powered interview companion, guiding you towards success, <br>one question at a time.</p>
             <form action="/index" method="POST">
                 {% csrf_token %}
-                <input type="text" id="inputString" name="position" placeholder="Enter The Position" required>
+                <input type="text" id="inputString" name="position" placeholder="   Enter The Position  " class="input-box" required>
                 <button type="submit" class="btn">Ready For Interview!</button>
             </form>
         </div>

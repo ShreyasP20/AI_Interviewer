@@ -140,3 +140,11 @@ header{
     color:#fff;
     background: var(--main-color);
 }
+
+.input-box{
+    position: relative;
+    width: 20%;
+    height: 40px;
+    border: 2px solid rgb(0, 0, 0);
+    margin:30px;
+}
