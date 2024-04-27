@@ -1,22 +1,7 @@
-const wrapper = document.querySelector('.wrapper');
-const loginlink = document.querySelector('.login-link');
-const registerlink = document.querySelector('.register-link');
-const btnpopup = document.querySelector('.btnLogin-popup');
-const iconclose = document.querySelector('.icon-close');
-
-registerlink.addEventListener('click',()=>{
-    wrapper.classList.add('active');
-});
-
-
-loginlink.addEventListener('click',()=>{
-    wrapper.classList.remove('active');
-});
-
-btnpopup.addEventListener('click',()=>{
-    wrapper.classList.add('active-popup');
-});
-
-iconclose.addEventListener('click',()=>{
-    wrapper.classList.remove('active-popup');
+document.querySelector('form').addEventListener('submit', function(event) {
+    var input = document.getElementById('inputString').value.trim();
+    if (!input) {
+        event.preventDefault(); // Prevent form submission
+        document.getElementById('error-message').style.display = 'block'; // Display error message
+    }
 });

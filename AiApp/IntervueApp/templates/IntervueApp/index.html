@@ -23,7 +23,11 @@
             <span>  Welcome to</span>
             <h1>Intervue App!</h1>
             <p>Unlock your potential with our AI-powered interview companion, guiding you towards success, <br>one question at a time.</p>
-            <a href="#" class="btn">Ready For Interview!</a>
+            <form action="/index" method="POST">
+                {% csrf_token %}
+                <input type="text" id="inputString" name="position" placeholder="Enter The Position" required>
+                <button type="submit" class="btn">Ready For Interview!</button>
+            </form>
         </div>
     </section> 
 
