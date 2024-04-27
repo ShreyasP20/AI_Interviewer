@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record and Process Audio</title>
+    <script>
+        // Function to get CSRF token from cookies
+        function getCSRFToken() {
+            const cookieValue = document.cookie.match(/csrftoken=([^;]+)/);
+            return cookieValue ? cookieValue[1] : null;
+        }
+    </script>
+</head>
+<body>
+    <h1>Record and Process Audio</h1>
+    <button id="recordButton">Record</button>
+    <button id="stopButton" disabled>Stop</button>
+    <div id="recordingsList"></div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const formData = new FormData();
+                    formData.append('audio', audioBlob, 'recording.wav');
+
+                    // Include CSRF token in the request
+                    formData.append('csrfmiddlewaretoken', getCSRFToken());
+
+                    fetch('/record_and_process_audio/', {
+                        method: 'POST',
+                        body: formData,
+                        // Set CSRF token header
+                        headers: {
+                            'X-CSRFToken': getCSRFToken()
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => console.log(data))
+                    .catch(error => console.error('Error:', error));
+
+                    audioChunks = [];
+                };
+            })
+            .catch(error => console.error('Error accessing user media:', error));
+
+        document.getElementById('recordButton').addEventListener('click', () => {
+            mediaRecorder.start();
+            document.getElementById('recordButton').disabled = true;
+            document.getElementById('stopButton').disabled = false;
+        });
+
+        document.getElementById('stopButton').addEventListener('click', () => {
+            mediaRecorder.stop();
+            document.getElementById('recordButton').disabled = false;
+            document.getElementById('stopButton').disabled = true;
+        });
+    </script>
+</body>
+</html>
