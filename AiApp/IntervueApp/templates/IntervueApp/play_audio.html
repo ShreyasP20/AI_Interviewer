@@ -1,12 +1,22 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Play Audio</title>
+    <title>Question</title>
+    <link rel="stylesheet" href="{% static "styles/play_audio.css" %}">
 </head>
 <body>
-    <h1>Audio Playback</h1>
+    <header>
+        <h2 class="logo">AIvyInterview</h2>
+        <nav class="navigation">
+            <a href="#">Home</a>
+            <a href="#">About</a>
+            <a href="#">Services</a>
+            <a href="#">Contact</a>
+    </header>
+    <h1>Play Question</h1>
     <audio controls>
         <source src="/media/audio/question.mp3" type="audio/mp3">
         Your browser does not support the audio element.
