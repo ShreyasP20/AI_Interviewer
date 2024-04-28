@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Record and Process Audio</title>
+    <title>AIvyInterview</title>
     <link rel="stylesheet" href="{% static "styles/record_audio.css" %}">
     <script>
 
@@ -51,7 +51,6 @@
                     fetch('/record_and_process_audio/', {
                         method: 'POST',
                         body: formData,
-                        // Set CSRF token header
                         headers: {
                             'X-CSRFToken': getCSRFToken()
                         }

@@ -1,26 +1,159 @@
-<!Doctype html>
+<!DOCTYPE html>
 {% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IntervueApp</title>
+    <title>AIvyInterview</title>
     <link rel="stylesheet" href="{% static "styles/upload.css" %}">
 </head>
-    <body>
-        <header>
-         <h2 class="logo">AIvyInterview</h2>
-            <nav class="navigation">
-                <a href="#">Home</a>
-                <a href="#">About</a>
-                <a href="#">Services</a>
-                <a href="#">Contact</a>
-        </header>
-        <form action="" method="post" enctype='multipart/form-data'>
-            {% csrf_token %}
-            <input type='file' name='files' images='multiple'>
-            <button>Upload</button>
-        </form>
-        <hr>
-</head>
+<body>
+    <header>
+        <h2 class="logo">AIvyInterview</h2>
+        <nav class="navigation">
+            <a href="#">Home</a>
+            <a href="#">About</a>
+            <a href="#">Services</a>
+            <a href="#">Contact</a>
+    </header>
+    <div class="container">
+        <div class="header-section">
+            <h1>Upload Resume</h1>
+            <p>Upload Resume To Get Started On Your Interview!!</p>
+            <p>PDF & Images Allowed</p>
+        </div>
+        <div class="drop-section">
+            <form action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="col">
+                    <div class="cloud-icon">
+                        <img src="{% static "icons/cloud.png" %}" alt="cloud">
+                    </div>
+                    <span>Drag & Drop your files here</span>
+                    <span>OR</span>
+                    <button type="button" class="file-selector">Browse Files</button>
+                    <input type="file" name="files" class="file-selector-input" multiple>
+                </div>
+                <div class="col">
+                    <div class="drop-here">Drop Here</div>
+                </div>
+                <button type="submit" class="Upload">Upload</button>
+            </form>
+            <div class="list-section">
+                <div class="list-title">Uploaded Files</div>
+                <div class="list"></div>
+            </div>
+        </div>
+    </div>
+
+    
+    <script>
+        const dropArea = document.querySelector('.drop-section')
+        const listSection = document.querySelector('.list-section')
+        const listContainer = document.querySelector('.list')
+        const fileSelector = document.querySelector('.file-selector')
+        const fileSelectorInput = document.querySelector('.file-selector-input')
+        
+        fileSelector.onclick = () => fileSelectorInput.click()
+        fileSelectorInput.onchange = () => {
+            [...fileSelectorInput.files].forEach((file) => {
+                if(typeValidation(file.type)){
+                    uploadFile(file)
+                }
+            })
+        }
+        
+        dropArea.ondragover = (e) => {
+            e.preventDefault();
+            [...e.dataTransfer.items].forEach((item) => {
+                if(typeValidation(item.type)){
+                    dropArea.classList.add('drag-over-effect')
+                }
+            })
+        }
+        dropArea.ondragleave = () => {
+            dropArea.classList.remove('drag-over-effect')
+        }
+
+        dropArea.ondrop = (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('drag-over-effect')
+            if(e.dataTransfer.items){
+                [...e.dataTransfer.items].forEach((item) => {
+                    if(item.kind === 'file'){
+                        const file = item.getAsFile();
+                        if(typeValidation(file.type)){
+                            uploadFile(file)
+                        }
+                    }
+                })
+            }else{
+                [...e.dataTransfer.files].forEach((file) => {
+                    if(typeValidation(file.type)){
+                        uploadFile(file)
+                    }
+                })
+            }
+        }
+        
+        
+        function typeValidation(type){
+            var splitType = type.split('/')[0]
+            if(type == 'application/pdf' || splitType == 'image' || splitType == 'video'){
+                return true
+            }
+        }
+        
+        function uploadFile(file){
+            listSection.style.display = 'block'
+            var li = document.createElement('li')
+            li.classList.add('in-prog')
+            li.innerHTML = `
+                <div class="col">
+                    <img src="icons/${iconSelector(file.type)}" alt="">
+                </div>
+                <div class="col">
+                    <div class="file-name">
+                        <div class="name">${file.name}</div>
+                        <span>0%</span>
+                    </div>
+                    <div class="file-progress">
+                        <span></span>
+                    </div>
+                    <div class="file-size">${(file.size/(1024*1024)).toFixed(2)} MB</div>
+                </div>
+                <div class="col">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="cross" height="20" width="20"><path d="m5.979 14.917-.854-.896 4-4.021-4-4.062.854-.896 4.042 4.062 4-4.062.854.896-4 4.062 4 4.021-.854.896-4-4.063Z"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="tick" height="20" width="20"><path d="m8.229 14.438-3.896-3.917 1.438-1.438 2.458 2.459 6-6L15.667 7Z"/></svg>
+                </div>
+            `
+            listContainer.prepend(li)
+            var http = new XMLHttpRequest()
+            var data = new FormData()
+            data.append('file', file)
+            http.onload = () => {
+                li.classList.add('complete')
+                li.classList.remove('in-prog')
+            }
+            http.upload.onprogress = (e) => {
+                var percent_complete = (e.loaded / e.total)*100
+                li.querySelectorAll('span')[0].innerHTML = Math.round(percent_complete) + '%'
+                li.querySelectorAll('span')[1].style.width = percent_complete + '%'
+            }
+            http.open('POST', 'sender.php', true)
+            http.send(data)
+            li.querySelector('.cross').onclick = () => http.abort()
+            http.onabort = () => li.remove()
+        }
+        // find icon for file
+        function iconSelector(type){
+            var splitType = (type.split('/')[0] == 'application') ? type.split('/')[1] : type.split('/')[0];
+            return splitType + '.png'
+        }
+    </script>
+
+
+</body>
+
+</html>
