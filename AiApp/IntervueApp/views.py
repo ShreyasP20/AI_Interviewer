@@ -73,6 +73,11 @@ def get_answer():
 
 
 
+def to_markdown(text):
+  text = text.replace('•', '  *')
+  return str(Markdown(textwrap.indent(text, '> ', predicate=lambda _: True)))
+
+
 def index(request):
     if request.method == "GET":
         return render(request , 'IntervueApp/index.html')
@@ -192,7 +197,7 @@ def process_image_files(img_files):
     print("Processing image files...")
     model = genai.GenerativeModel('gemini-pro', generation_config=generation_config)
 
-
-def to_markdown(text):
-  text = text.replace('•', '  *')
-  return str(Markdown(textwrap.indent(text, '> ', predicate=lambda _: True)))
+def result(request):
+    final_score = sum(similarity_scores)/len(similarity_scores)
+    context = {'final_score': final_score}
+    return render(request, 'IntervueApp/result.html', context)

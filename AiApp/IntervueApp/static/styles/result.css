@@ -11,17 +11,20 @@
     font-family: 'Poppins', sans-serif;
 }
 
+section{
+    padding: 50px 10%;
+}
+
 :root{
     --main-color:#00aaff;
     --second-color:#092b54;
 }
-
 body{
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background: url(../images/record.jpg) no-repeat;
+    background: url('../images/result.jpg') no-repeat;
     background-position: bottom right;
 }
 
@@ -47,7 +50,6 @@ header{
     color:var(--second-color);
     user-select: none;
 }
-
 
 .navigation a{
     position: relative;
@@ -75,44 +77,76 @@ header{
     transform: scaleX(1);
 }
 
-#recordButton{
-    padding:10px 20px;
-    border: 2px solid var(--main-color);
+.navigation .btnLogin-popup{
+    width:130px;
+    height:50px;
+    background: transparent;
+    border:2px solid #000000;
+    outline: None;
+    border-radius: 6px;
+    cursor:pointer;
+    font-size: 1.1em;
+    color: #000000;
     font-weight: 500;
-    transition: all 0.3s ease;
+    margin-left: 40px;
 }
 
-#recordButton:hover{
-    letter-spacing: 2px;
-    color:#26d1e1;
+.navigation .btnLogin-popup:hover{
+    background: #000000;
+    color:rgb(0, 200, 255);
 }
 
-#stopButton{
-    padding:10px 20px;
-    border: 2px solid var(--main-color);
-    font-weight: 500;
-    transition: all 0.3s ease;
+.home{
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start; 
+    gap:1rem;
 }
 
-#stopButton:hover{
-    letter-spacing: 2px;
-    color:#2ad9cd;
+.home-text{
+    flex:1 1 17rem;
 }
 
-#FinishTest{
-    padding:10px 20px;
-    border: 2px solid var(--main-color);
-    font-weight: 500;
-    transition: all 0.3s ease;
+.home-text span{
+    font-size: 1rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #16b978;
 }
 
-#FinishTest{
-    letter-spacing: 2px;
-    color:#2ad9cd;
-}
-
-
-h1{
-    font-size:1.5rem;
+.home-text h1{
+    font-size:4rem;
     color:var(--second-color);
+
+}
+
+.home-text p{
+    margin:0.5rem 0 1.4rem;
+}
+
+
+
+.btn{
+    padding:10px 20px;
+    border: 2px solid var(--main-color);
+    color: var(--main-color);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover{
+    letter-spacing: 2px;
+    color:#fff;
+    background: var(--main-color);
+}
+
+.input-box{
+    position: relative;
+    width: 20%;
+    height: 40px;
+    border: 2px solid rgb(0, 0, 0);
+    margin:30px;
 }
