@@ -21,7 +21,7 @@ generation_config = {
   "top_k": 0,
   "max_output_tokens": 8192,
 }
-similarity_scores=[0.0]*3
+similarity_scores=[]
 resume=""
 position=""
 answer=""
@@ -32,6 +32,8 @@ chat=model.start_chat(history=[])
 current_answer=""
 current_question=""
 fu_question=""
+
+
 
 def speak(text):
     try:
@@ -49,7 +51,7 @@ def get_answer():
     said = ""
     try:
         with sr.AudioFile(audio_file_path) as source:
-            audio_data = r.record(source, duration=10)  # Limit recognition to 10 seconds
+            audio_data = r.record(source, duration=10)  
             said = r.recognize_google(audio_data, language='en-US', show_all=False)
     except FileNotFoundError:
         print("Audio file not found.")
