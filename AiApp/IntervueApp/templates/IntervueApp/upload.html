@@ -111,7 +111,7 @@
             li.classList.add('in-prog')
             li.innerHTML = `
                 <div class="col">
-                    <img src="icons/${iconSelector(file.type)}" alt="">
+                    <img src="{% static "icons/${iconSelector(file.type)}.png" %}" alt="">
                 </div>
                 <div class="col">
                     <div class="file-name">

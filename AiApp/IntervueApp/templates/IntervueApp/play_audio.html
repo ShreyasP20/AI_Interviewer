@@ -15,11 +15,32 @@
             <a href="#">About</a>
             <a href="#">Services</a>
             <a href="#">Contact</a>
+        </nav>
     </header>
-    <h1>Play Question</h1>
-    <audio controls>
-        <source src="/media/audio/question.mp3" type="audio/mp3">
-        Your browser does not support the audio element.
-    </audio>
+    <section class="home" id="'home">
+        <div class="home-text">
+            <h1>Listen Carefully</h1>
+            <p>The App will switch to the answer section after 10 seconds.</p>
+            <audio controls src="/media/audio/question.mp3" id="question-audio"></audio>
+            <br>
+            <br>
+            <button class="btn"> Give Your Answer! </button>
+        </div>
+    </section> 
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const audio = document.getElementById("question-audio");
+
+            function switchToAnswerSection() {
+                console.log("Switching to the answer section...");
+                window.location.href = "/answer";
+            }
+
+            audio.addEventListener("ended", function() {
+                setTimeout(switchToAnswerSection, 10000); 
+            });
+        });
+    </script>
 </body>
 </html>

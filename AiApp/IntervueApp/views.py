@@ -41,26 +41,30 @@ def speak(text):
     tts = gTTS(text=text, lang='en', slow=False, tld='com', lang_check=False)
     audio_path = os.path.join(settings.MEDIA_ROOT, 'audio', 'question.mp3')
     tts.save(audio_path)
-    
-    
-    
+
+
 def get_answer():
-    try:
-        os.remove(os.path.join(settings.MEDIA_ROOT, 'audio', 'answer.wav'))
-    except:
-        pass
     audio_file_path = os.path.join(settings.MEDIA_ROOT, 'audio', 'answer.wav')
     r = sr.Recognizer()
     said = ""
     try:
         with sr.AudioFile(audio_file_path) as source:
-            audio_data = r.record(source)
-            said = r.recognize_google(audio_data)
+            audio_data = r.record(source, duration=10)  # Limit recognition to 10 seconds
+            said = r.recognize_google(audio_data, language='en-US', show_all=False)
+    except FileNotFoundError:
+        print("Audio file not found.")
+        return "NAN"
+    except PermissionError:
+        print("Permission denied to access audio file.")
+        return "NAN"
     except sr.UnknownValueError:
         print("Speech Recognition could not understand audio")
         return "NAN"
     except sr.RequestError as e:
-        print("Could not request results from Speech Recognition service; {0}".format(e))
+        print(f"Could not request results from Speech Recognition service: {e}")
+        return "NAN"
+    except Exception as ex:
+        print(f"An error occurred: {ex}")
         return "NAN"
 
     return said
@@ -101,6 +105,10 @@ def record_and_process_audio(request):
                 for chunk in audio_file.chunks():
                     f.write(chunk)
             current_answer = get_answer()
+            try:
+                os.remove(os.path.join(settings.MEDIA_ROOT, 'audio', 'answer.wav'))
+            except:
+                pass
             if current_answer == "NAN":
                 return JsonResponse({'status': 'error', 'message': 'No Audio Recorded '})
             response = chat.send_message_async(f"Give an ideal answer, for the question {current_question} considering the skills {resume}")

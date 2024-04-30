@@ -21,6 +21,7 @@ body{
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    background: url(../images/record.jpg) no-repeat;
     background-position: bottom right;
 }
 
@@ -72,4 +73,33 @@ header{
 
 .navigation a:hover::after{
     transform: scaleX(1);
+}
+
+#recordButton{
+    padding:10px 20px;
+    border: 2px solid var(--main-color);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+#recordButton:hover{
+    letter-spacing: 2px;
+    color:#26d1e1;
+}
+
+#stopButton{
+    padding:10px 20px;
+    border: 2px solid var(--main-color);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+#stopButton:hover{
+    letter-spacing: 2px;
+    color:#2ad9cd;
+}
+
+h1{
+    font-size:1.5rem;
+    color:var(--second-color);
 }

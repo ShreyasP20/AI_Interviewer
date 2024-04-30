@@ -59,6 +59,7 @@ header{
     font-weight: 500;
     margin-left: 20px;
 }
+
 .navigation a::after{
     content:"";
     position:absolute;
@@ -94,6 +95,7 @@ header{
     background: #000000;
     color:rgb(0, 200, 255);
 }
+
 .home{
     width: 100%;
     min-height: 100vh;
