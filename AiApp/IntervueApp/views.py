@@ -27,7 +27,7 @@ position=""
 answer=""
 follow_up_q=False
 model = genai.GenerativeModel('gemini-pro', generation_config=generation_config)
-genai.configure(api_key='GENAI_API_KEY')
+genai.configure(api_key='GEMINI_API')
 chat=model.start_chat(history=[])
 current_answer=""
 current_question=""
@@ -96,7 +96,6 @@ def upload(request):
             with open(file_path, 'wb') as destination:
                 for chunk in uploaded_file.chunks():
                     destination.write(chunk)
-        process_media_folder()   
         return redirect(play_audio)
     return render(request, 'IntervueApp/upload.html')
 
@@ -135,15 +134,19 @@ def record_and_process_audio(request):
     
     
 def play_audio(request):
+    resume = process_media_folder()
     if follow_up_q:
-        response = chat.send_message(f"Ask a follow up question for {position} in a company. the Skillset of the person is{resume},reviewing the previous answer")
+        response = chat.send_message(f"Ask a follow up question for {position} in a company. the resume of the person is:{resume},reviewing the previous answer")
         fu_question = response.text.replace('\n', '').replace('```', '')
         speak(fu_question)
+        return render(request, 'IntervueApp/play_audio.html')
     else:
-        response = chat.send_message(f"You are a recruiter at a Company, ask one question for {position} in a company based on the skills make that question technical. the Skillset of the person is {resume}")
+        if position == "":
+            print("NO POSITION")
+        response = chat.send_message(f"You are a recruiter at a Company, ask one question for {position} in a company based on the skills make that question technical. the resume of the person is: {resume}, ask question such that the answer can be given verbally without any coding or other form, only verbal knowledge to be considered")        
         current_question = response.text.replace('\n', '').replace('```', '')
         speak(current_question)
-    return render(request, 'IntervueApp/play_audio.html')
+        return render(request, 'IntervueApp/play_audio.html')
 
 
 
@@ -158,16 +161,17 @@ def process_media_folder():
         print("PDF files found in the media folder:")
         for pdf_file in pdf_files:
             print("- " + pdf_file)
-        process_pdf_files(pdf_files)
+        data = process_pdf_files(pdf_files)
     img_files = [file for file in files if file.endswith(('.jpg', '.jpeg', '.png', '.gif'))]
     if img_files:
         print("Image files found in the media folder:")
         for img_file in img_files:
             print("- " + img_file)
-        process_image_files(img_files)
-
+        data = process_image_files(img_files)
+    return data
 
 def process_pdf_files(pdf_files):
+    print("REACHED")
     for pdf_file in pdf_files:
         pdf_path = os.path.join(settings.MEDIA_ROOT, pdf_file)
 
@@ -177,8 +181,7 @@ def process_pdf_files(pdf_files):
             for page_num in range(len(pdf_reader.pages)):
                 page = pdf_reader.pages[page_num]
                 text += page.extract_text()
-                
-    resume = text
+        return text
 
 
 def process_image_files(img_files):
