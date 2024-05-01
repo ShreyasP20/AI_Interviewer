@@ -27,7 +27,7 @@ position=""
 answer=""
 follow_up_q=False
 model = genai.GenerativeModel('gemini-pro', generation_config=generation_config)
-genai.configure(api_key='GEMINI_API')
+genai.configure(api_key='AIzaSyB2ykTpIgDjPe59LxWAIw_6QYjLdwrmNAA')
 chat=model.start_chat(history=[])
 current_answer=""
 current_question=""
@@ -143,6 +143,8 @@ def play_audio(request):
     else:
         if position == "":
             print("NO POSITION")
+        if resume == "":
+            print("NO RESUME")
         response = chat.send_message(f"You are a recruiter at a Company, ask one question for {position} in a company based on the skills make that question technical. the resume of the person is: {resume}, ask question such that the answer can be given verbally without any coding or other form, only verbal knowledge to be considered")        
         current_question = response.text.replace('\n', '').replace('```', '')
         speak(current_question)
@@ -151,6 +153,7 @@ def play_audio(request):
 
 
 def process_media_folder():
+    data = ""
     media_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'media')
     if not os.path.exists(media_folder):
         print("Media folder does not exist.")
