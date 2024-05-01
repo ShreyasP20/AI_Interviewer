@@ -13,21 +13,23 @@ import pypdf
 from PIL import Image
 from IPython.display import Markdown
 import textwrap
+import soundfile as sf
+from scipy import signal
 # Create your views here.
 
 generation_config = {
   "temperature": 1,
   "top_p": 0.95,
-  "top_k": 0,
+  "top_k": 0.5,
   "max_output_tokens": 8192,
 }
 similarity_scores=[]
 resume=""
-position=""
+position = ""
 answer=""
 follow_up_q=False
 model = genai.GenerativeModel('gemini-pro', generation_config=generation_config)
-genai.configure(api_key='GEMINI')
+genai.configure(api_key='AIzaSyD2J7PdOtpAZBc3YWCjcBO8tNmD5rF8ZfM')
 chat=model.start_chat(history=[])
 current_answer=""
 current_question=""
@@ -50,35 +52,51 @@ def get_answer():
     r = sr.Recognizer()
     said = ""
     try:
-        with sr.AudioFile(audio_file_path) as source:
-            audio_data = r.record(source, duration=10)  
+        audio, sample_rate = sf.read(audio_file_path)
+
+        if audio.ndim > 1:
+            audio = audio[:, 0]
+
+        target_sample_rate = 16000
+        if sample_rate != target_sample_rate:
+            audio = signal.resample(audio, int(len(audio) * target_sample_rate / sample_rate))
+
+        temp_wav_file = 'temp_audio.wav'
+        sf.write(temp_wav_file, audio, target_sample_rate)
+
+        print("Temporary WAV file saved successfully.")
+
+        r = sr.Recognizer()
+        with sr.AudioFile(temp_wav_file) as source:
+            audio_data = r.record(source, duration=10)
             said = r.recognize_google(audio_data, language='en-US', show_all=False)
+
+        os.remove(temp_wav_file)
+        return said
     except FileNotFoundError:
-        print("Audio file not found.")
-        return "NAN"
+        print(f"Audio file '{audio_file_path}' not found.")
     except PermissionError:
         print("Permission denied to access audio file.")
-        return "NAN"
+        
     except sr.UnknownValueError:
         print("Speech Recognition could not understand audio")
-        return "NAN"
+        
     except sr.RequestError as e:
         print(f"Could not request results from Speech Recognition service: {e}")
-        return "NAN"
+        
     except Exception as ex:
         print(f"An error occurred: {ex}")
-        return "NAN"
 
-    return said
-
+    return "NAN"
 
 
 def to_markdown(text):
-  text = text.replace('•', '  *')
-  return str(Markdown(textwrap.indent(text, '> ', predicate=lambda _: True)))
+    text = text.replace('•', '  *')
+    return str(Markdown(textwrap.indent(text, '> ', predicate=lambda _: True)))
 
 
 def index(request):
+    global position
     if request.method == "GET":
         return render(request , 'IntervueApp/index.html')
     if request.method == "POST":
@@ -106,15 +124,11 @@ def record_and_process_audio(request):
     elif request.method == 'POST':
         if request.FILES.get('audio'):
             audio_file = request.FILES['audio']
-            os.makedirs(os.path.dirname(settings.MEDIA_ROOT + '\\audio\\answer.wav'), exist_ok=True)
-            with open(settings.MEDIA_ROOT + '\\audio\\answer.wav', 'wb') as f:
+            os.makedirs(os.path.dirname(settings.MEDIA_ROOT + '\\audio\\answer.mp3'), exist_ok=True)
+            with open(settings.MEDIA_ROOT + '\\audio\\answer.mp3', 'wb') as f:
                 for chunk in audio_file.chunks():
                     f.write(chunk)
-            current_answer = get_answer()
-            try:
-                os.remove(os.path.join(settings.MEDIA_ROOT, 'audio', 'answer.wav'))
-            except:
-                pass
+            current_answer = get_answer() 
             if current_answer == "NAN":
                 return JsonResponse({'status': 'error', 'message': 'No Audio Recorded '})
             response = chat.send_message_async(f"Give an ideal answer, for the question {current_question} considering the skills {resume}")
@@ -135,18 +149,18 @@ def record_and_process_audio(request):
     
 def play_audio(request):
     resume = process_media_folder()
+    follow_up_q= True
     if follow_up_q:
         response = chat.send_message(f"Ask a follow up question for {position} in a company. the resume of the person is:{resume},reviewing the previous answer")
         fu_question = response.text.replace('\n', '').replace('```', '')
         speak(fu_question)
         return render(request, 'IntervueApp/play_audio.html')
     else:
-        if position == "":
-            print("NO POSITION")
-        if resume == "":
-            print("NO RESUME")
-        response = chat.send_message(f"You are a recruiter at a Company, ask one question for {position} in a company based on the skills make that question technical. the resume of the person is: {resume}, ask question such that the answer can be given verbally without any coding or other form, only verbal knowledge to be considered")        
-        current_question = response.text.replace('\n', '').replace('```', '')
+        try:
+            response = chat.send_message(f"You are a recruiter at a Company, ask one question for {position} in a company based on the skills make that question technical. the resume of the person is: {resume}")       
+            current_question = response.text.replace('\n', '').replace('```', '')
+        except:
+            current_question = " What is your experience with Python?"
         speak(current_question)
         return render(request, 'IntervueApp/play_audio.html')
 
@@ -171,7 +185,7 @@ def process_media_folder():
         for img_file in img_files:
             print("- " + img_file)
         data = process_image_files(img_files)
-    return data
+    return str(data)
 
 def process_pdf_files(pdf_files):
     print("REACHED")
