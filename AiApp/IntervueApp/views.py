@@ -27,7 +27,7 @@ position=""
 answer=""
 follow_up_q=False
 model = genai.GenerativeModel('gemini-pro', generation_config=generation_config)
-genai.configure(api_key='AIzaSyB2ykTpIgDjPe59LxWAIw_6QYjLdwrmNAA')
+genai.configure(api_key='GENAI_API_KEY')
 chat=model.start_chat(history=[])
 current_answer=""
 current_question=""
@@ -198,6 +198,9 @@ def process_image_files(img_files):
     model = genai.GenerativeModel('gemini-pro', generation_config=generation_config)
 
 def result(request):
-    final_score = sum(similarity_scores)/len(similarity_scores)
+    if len(similarity_scores) == 0:
+        final_score=0
+    else:
+        final_score = sum(similarity_scores)/len(similarity_scores)
     context = {'final_score': final_score}
     return render(request, 'IntervueApp/result.html', context)
