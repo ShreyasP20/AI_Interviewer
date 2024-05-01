@@ -27,7 +27,7 @@ position=""
 answer=""
 follow_up_q=False
 model = genai.GenerativeModel('gemini-pro', generation_config=generation_config)
-genai.configure(api_key='AIzaSyB2ykTpIgDjPe59LxWAIw_6QYjLdwrmNAA')
+genai.configure(api_key='GEMINI')
 chat=model.start_chat(history=[])
 current_answer=""
 current_question=""
