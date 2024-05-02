@@ -106,7 +106,7 @@ header{
     transition: all 0.3s ease;
 }
 
-#FinishTest{
+#FinishTest:hover{
     letter-spacing: 2px;
     color:#2ad9cd;
 }

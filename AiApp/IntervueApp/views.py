@@ -8,19 +8,22 @@ from gtts import gTTS
 import nltk 
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-import speech_recognition as sr
 import pypdf
 from PIL import Image
 from IPython.display import Markdown
 import textwrap
 import soundfile as sf
 from scipy import signal
+import numpy as np
+import wave
+import speech_recognition as sr
+from speech_recognition import Recognizer, AudioFile
+from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 
 generation_config = {
   "temperature": 1,
   "top_p": 0.95,
-  "top_k": 0.5,
   "max_output_tokens": 8192,
 }
 similarity_scores=[]
@@ -28,13 +31,12 @@ resume=""
 position = ""
 answer=""
 follow_up_q=False
-model = genai.GenerativeModel('gemini-pro', generation_config=generation_config)
+model = genai.GenerativeModel('gemini-pro')
 genai.configure(api_key='AIzaSyD2J7PdOtpAZBc3YWCjcBO8tNmD5rF8ZfM')
 chat=model.start_chat(history=[])
 current_answer=""
 current_question=""
 fu_question=""
-
 
 
 def speak(text):
@@ -47,47 +49,7 @@ def speak(text):
     tts.save(audio_path)
 
 
-def get_answer():
-    audio_file_path = os.path.join(settings.MEDIA_ROOT, 'audio', 'answer.wav')
-    r = sr.Recognizer()
-    said = ""
-    try:
-        audio, sample_rate = sf.read(audio_file_path)
 
-        if audio.ndim > 1:
-            audio = audio[:, 0]
-
-        target_sample_rate = 16000
-        if sample_rate != target_sample_rate:
-            audio = signal.resample(audio, int(len(audio) * target_sample_rate / sample_rate))
-
-        temp_wav_file = 'temp_audio.wav'
-        sf.write(temp_wav_file, audio, target_sample_rate)
-
-        print("Temporary WAV file saved successfully.")
-
-        r = sr.Recognizer()
-        with sr.AudioFile(temp_wav_file) as source:
-            audio_data = r.record(source, duration=10)
-            said = r.recognize_google(audio_data, language='en-US', show_all=False)
-
-        os.remove(temp_wav_file)
-        return said
-    except FileNotFoundError:
-        print(f"Audio file '{audio_file_path}' not found.")
-    except PermissionError:
-        print("Permission denied to access audio file.")
-        
-    except sr.UnknownValueError:
-        print("Speech Recognition could not understand audio")
-        
-    except sr.RequestError as e:
-        print(f"Could not request results from Speech Recognition service: {e}")
-        
-    except Exception as ex:
-        print(f"An error occurred: {ex}")
-
-    return "NAN"
 
 
 def to_markdown(text):
@@ -124,32 +86,46 @@ def record_and_process_audio(request):
     elif request.method == 'POST':
         if request.FILES.get('audio'):
             audio_file = request.FILES['audio']
-            os.makedirs(os.path.dirname(settings.MEDIA_ROOT + '\\audio\\answer.mp3'), exist_ok=True)
-            with open(settings.MEDIA_ROOT + '\\audio\\answer.mp3', 'wb') as f:
+            os.makedirs(os.path.dirname(settings.MEDIA_ROOT + '\\audio\\answer.wav'), exist_ok=True)
+            with open(settings.MEDIA_ROOT + '\\audio\\answer.wav', 'wb') as f:
                 for chunk in audio_file.chunks():
                     f.write(chunk)
-            current_answer = get_answer() 
-            if current_answer == "NAN":
-                return JsonResponse({'status': 'error', 'message': 'No Audio Recorded '})
-            response = chat.send_message_async(f"Give an ideal answer, for the question {current_question} considering the skills {resume}")
-            ideal_nu_answer= response.text.replace('\n', '').replace('```', '') 
-            tokens1 = set(word_tokenize(current_answer.lower())) - set(stopwords.words('english'))
-            tokens2 = set(word_tokenize(ideal_nu_answer.lower())) - set(stopwords.words('english'))
-            similarity_score = len(tokens1.intersection(tokens2)) / len(tokens1.union(tokens2))
-            if similarity_score < 50:
-                follow_up_q = True
-            else:
-                follow_up_q = False
-            similarity_scores.append(similarity_score)
+            
         else:
             return JsonResponse({'status': 'error', 'message': 'No audio file found'})
     else:
         return JsonResponse({'status': 'error', 'message': 'Unsupported request method'})
-    
-    
+
+
+@csrf_exempt  
+def process_text(request):
+    if request.method == 'GET':
+        return render(request, 'IntervueApp/record_and_process.html')
+
+    elif request.method == 'POST':
+        text = request.POST.get('text', '')  
+        print("Received text:", text)
+        current_answer = text 
+        if current_answer == "NAN":
+            return JsonResponse({'status': 'error', 'message': 'No Audio Recorded '})
+        response = chat.send_message_async(f"Give an ideal answer, for the question {current_question} considering the skills {resume}")
+        ideal_nu_answer= response.text.replace('\n', '').replace('```', '') 
+        tokens1 = set(word_tokenize(current_answer.lower())) - set(stopwords.words('english'))
+        tokens2 = set(word_tokenize(ideal_nu_answer.lower())) - set(stopwords.words('english'))
+        similarity_score = len(tokens1.intersection(tokens2)) / len(tokens1.union(tokens2))
+        if similarity_score < 50:
+            follow_up_q = True
+        else:
+            follow_up_q = False
+        similarity_scores.append(similarity_score)
+        return redirect(play_audio)
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Unsupported request method'})
+
+
+
 def play_audio(request):
     resume = process_media_folder()
-    follow_up_q= True
     if follow_up_q:
         response = chat.send_message(f"Ask a follow up question for {position} in a company. the resume of the person is:{resume},reviewing the previous answer")
         fu_question = response.text.replace('\n', '').replace('```', '')
@@ -218,9 +194,9 @@ def process_image_files(img_files):
     model = genai.GenerativeModel('gemini-pro', generation_config=generation_config)
 
 def result(request):
-    if len(similarity_scores) == 0:
-        final_score=0
-    else:
+    try:
         final_score = sum(similarity_scores)/len(similarity_scores)
+    except:
+        final_score=0
     context = {'final_score': final_score}
     return render(request, 'IntervueApp/result.html', context)

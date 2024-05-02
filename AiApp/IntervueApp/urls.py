@@ -8,5 +8,6 @@ urlpatterns = [
     path('results', views.result, name='result'),
     path('record_and_process_audio/', views.record_and_process_audio, name='record_and_process_audio'),
     path('play_audio', views.play_audio, name='play_audio'),
+    path('process_text/', views.process_text, name='process_text'),
     path('upload', views.upload, name='upload')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

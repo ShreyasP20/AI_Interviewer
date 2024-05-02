@@ -6,14 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIvyInterview</title>
     <link rel="stylesheet" href="{% static "styles/record_audio.css" %}">
-    <script>
-
-        function getCSRFToken() {
-            const cookieValue = document.cookie.match(/csrftoken=([^;]+)/);
-            return cookieValue ? cookieValue[1] : null;
-        }
-
-    </script>
 </head>
 <body>
     <header>
@@ -38,6 +30,54 @@
         <button id="FinishTest" onclick="window.location.href='/results'"> Finish AIvyInterview </button>
     </section>
     <script>
+
+        // Function to get CSRF token from cookie
+        function getCSRFToken() {
+            const cookieValue = document.cookie.match(/csrftoken=([^;]+)/);
+            return cookieValue ? cookieValue[1] : null;
+        }
+
+        // Function to convert speech to text using Web Speech API
+        function convertSpeechToText(blob) {
+            const recognition = new webkitSpeechRecognition(); // Create speech recognition object
+            recognition.lang = 'en-US'; // Set language to English
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript; // Get transcript of the speech
+                sendTextToBackend(transcript); // Call function to send text to backend
+            };
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+            };
+            recognition.onend = () => {
+                console.log('Speech recognition ended.');
+            };
+
+            // Convert audio blob to URL
+            const audioURL = URL.createObjectURL(blob);
+
+            // Start speech recognition with audio URL
+            recognition.src = audioURL;
+            recognition.start();
+        }
+
+        // Function to send recognized text to backend
+        function sendTextToBackend(text) {
+            const formData = new FormData();
+            formData.append('text', text);
+            formData.append('csrfmiddlewaretoken', getCSRFToken());
+
+            fetch('/process_text/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCSRFToken()
+                }
+            })
+            .then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => console.error('Error:', error));
+        }
+
         let mediaRecorder;
         let audioChunks = [];
 
@@ -51,22 +91,7 @@
 
                 mediaRecorder.onstop = () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    const formData = new FormData();
-                    formData.append('audio', audioBlob, 'recording.wav');
-                    
-                    formData.append('csrfmiddlewaretoken', getCSRFToken());
-                    
-                    fetch('/record_and_process_audio/', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRFToken': getCSRFToken()
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => console.log(data))
-                    .catch(error => console.error('Error:', error));
-
+                    convertSpeechToText(audioBlob); // Call function to convert speech to text
                     audioChunks = [];
                 };
             })
