@@ -49,9 +49,6 @@ def speak(text):
     tts.save(audio_path)
 
 
-
-
-
 def to_markdown(text):
     text = text.replace('•', '  *')
     return str(Markdown(textwrap.indent(text, '> ', predicate=lambda _: True)))
