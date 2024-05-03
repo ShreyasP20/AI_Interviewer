@@ -47,11 +47,13 @@ python manage.py runserver
 ## Code Snippets
 
 ```python
+
 # Calculate similarity score
 tokens1 = set(word_tokenize(current_answer.lower())) - set(stopwords.words('english'))
 tokens2 = set(word_tokenize(ideal_nu_answer.lower())) - set(stopwords.words('english'))
 similarity_score = len(tokens1.intersection(tokens2)) / len(tokens1.union(tokens2))
 
+```
 
 ## Showcase
 
