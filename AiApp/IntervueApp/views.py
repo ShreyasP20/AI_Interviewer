@@ -77,23 +77,6 @@ def upload(request):
     return render(request, 'IntervueApp/upload.html')
 
 
-def record_and_process_audio(request):
-    if request.method == 'GET':
-        return render(request, 'IntervueApp/record_audio.html')
-    elif request.method == 'POST':
-        if request.FILES.get('audio'):
-            audio_file = request.FILES['audio']
-            os.makedirs(os.path.dirname(settings.MEDIA_ROOT + '\\audio\\answer.wav'), exist_ok=True)
-            with open(settings.MEDIA_ROOT + '\\audio\\answer.wav', 'wb') as f:
-                for chunk in audio_file.chunks():
-                    f.write(chunk)
-            
-        else:
-            return JsonResponse({'status': 'error', 'message': 'No audio file found'})
-    else:
-        return JsonResponse({'status': 'error', 'message': 'Unsupported request method'})
-
-
 @csrf_exempt  
 def process_text(request):
     if request.method == 'GET':
@@ -105,7 +88,7 @@ def process_text(request):
         current_answer = text 
         if current_answer == "NAN":
             return JsonResponse({'status': 'error', 'message': 'No Audio Recorded '})
-        response = chat.send_message_async(f"Give an ideal answer, for the question {current_question} considering the skills {resume}")
+        response = chat.send_message(f"Give an ideal answer, for the question {current_question} considering the skills {resume}")
         ideal_nu_answer= response.text.replace('\n', '').replace('```', '') 
         tokens1 = set(word_tokenize(current_answer.lower())) - set(stopwords.words('english'))
         tokens2 = set(word_tokenize(ideal_nu_answer.lower())) - set(stopwords.words('english'))

@@ -24,7 +24,7 @@
             <audio controls src="/media/audio/question.mp3" id="question-audio"></audio>
             <br>
             <br>
-            <button class="btn" onclick="window.location.href='/record_and_process_audio/'">Give Your Answer!</button>
+            <button class="btn" onclick="window.location.href='/process_text/'">Give Your Answer!</button>
         </div>
     </section> 
 
@@ -34,7 +34,7 @@
 
             function switchToAnswerSection() {
                 console.log("Switching to the answer section...");
-                window.location.href = "/record_and_process_audio/";
+                window.location.href = "/process_text/";
             }
 
             audio.addEventListener("ended", function() {
