@@ -12,13 +12,8 @@ import pypdf
 from PIL import Image
 from IPython.display import Markdown
 import textwrap
-import soundfile as sf
-from scipy import signal
-import numpy as np
-import wave
-import speech_recognition as sr
-from speech_recognition import Recognizer, AudioFile
 from django.views.decorators.csrf import csrf_exempt
+import API_KEY
 # Create your views here.
 
 generation_config = {
@@ -32,7 +27,7 @@ position = ""
 answer=""
 follow_up_q=False
 model = genai.GenerativeModel('gemini-pro')
-genai.configure(api_key='AIzaSyD2J7PdOtpAZBc3YWCjcBO8tNmD5rF8ZfM')
+genai.configure(api_key=API_KEY.API_KEY)
 chat=model.start_chat(history=[])
 current_answer=""
 current_question=""

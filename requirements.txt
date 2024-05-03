@@ -1,0 +1,9 @@
+Django
+google-generativeai
+gtts
+nltk
+Pillow
+pypdf
+PyAudio
+scipy
+speechrecognition
