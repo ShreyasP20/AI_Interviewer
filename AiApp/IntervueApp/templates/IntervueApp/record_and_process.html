@@ -31,19 +31,18 @@
     </section>
     <script>
 
-        // Function to get CSRF token from cookie
         function getCSRFToken() {
             const cookieValue = document.cookie.match(/csrftoken=([^;]+)/);
             return cookieValue ? cookieValue[1] : null;
         }
 
-        // Function to convert speech to text using Web Speech API
         function convertSpeechToText(blob) {
-            const recognition = new webkitSpeechRecognition(); // Create speech recognition object
-            recognition.lang = 'en-US'; // Set language to English
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript; // Get transcript of the speech
-                sendTextToBackend(transcript); // Call function to send text to backend
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'en-US'; 
+            recognition.onresult = (event) /=> {
+                const transcript = event.results[0][0].transcript; 
+                console.log(transcript)
+                sendTextToBackend(transcript); 
             };
             recognition.onerror = (event) => {
                 console.error('Speech recognition error:', event.error);
@@ -52,15 +51,12 @@
                 console.log('Speech recognition ended.');
             };
 
-            // Convert audio blob to URL
             const audioURL = URL.createObjectURL(blob);
 
-            // Start speech recognition with audio URL
             recognition.src = audioURL;
             recognition.start();
         }
 
-        // Function to send recognized text to backend
         function sendTextToBackend(text) {
             const formData = new FormData();
             formData.append('text', text);
@@ -91,7 +87,7 @@
 
                 mediaRecorder.onstop = () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    convertSpeechToText(audioBlob); // Call function to convert speech to text
+                    convertSpeechToText(audioBlob); 
                     audioChunks = [];
                 };
             })

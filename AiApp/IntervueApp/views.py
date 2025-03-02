@@ -13,7 +13,7 @@ from PIL import Image
 from IPython.display import Markdown
 import textwrap
 from django.views.decorators.csrf import csrf_exempt
-import API_KEY
+from . import API_KEY
 # Create your views here.
 
 generation_config = {
